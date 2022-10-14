@@ -14,13 +14,14 @@ needed_columns = ['id', 'userid', 'userfullname', 'message']
 # drop all comments and only keep needed columns
 forum = forum.loc[forum.get('parent') == 0]
 
-forum.drop(
-    columns=forum.columns.difference(needed_columns), 
-    axis=1, 
-    inplace=True
-)
+forum = forum[needed_columns]
+# .drop(
+#     columns=forum.columns.difference(needed_columns), 
+#     axis=1, 
+#     inplace=True
+# )
 
-# need to remove unicode characters
+# need to normalize whitespace characters
 forum['message'] = (forum['message']
     .str
     .split()

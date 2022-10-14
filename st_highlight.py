@@ -1,6 +1,7 @@
 import json
 import pandas as pd
 import streamlit as st
+import numpy as np
 
 # ------ Data Prep ------ #
 
@@ -27,6 +28,8 @@ questions = [ # questions hardcoded
     'What example is used to illustrate their position on what Schuurman says about technology?'
 ]
 
+highlight_colors = ['green', 'blue', 'red']
+
 answers = {}
 
 with open('answers.json') as ans:
@@ -36,35 +39,23 @@ for q in questions:
     st.write(q)
 
 for post in forum.itertuples():
+    st.subheader(post.id)
+    cur_post = post.message
     cur_ans = answers[str(post.id)]
     
-    answer_inds = []
+    colors = np.array(['white'] * len(cur_post))
 
-    for a in cur_ans:
-        answer_inds.append(a['start_ind'])
-        answer_inds.append(a['end_ind'])
+    for answer_idx, ans in enumerate(cur_ans):
+        colors[
+            ans['start_ind']:
+            ans['end_ind']
+        ] = highlight_colors[answer_idx]
 
-    highlighting = False
+    message_spans = [
+        f'<span style="color: {color};">{cur_post[i]}</span>'
+        for i, color in enumerate(colors)
+    ]
 
-    message_spans = []
-
-    for i in range(len(post.message)):
-        color = 'white'
-
-        if i in answer_inds and answer_inds.index(i) % 2 == 0: # if it is a start of an answer
-            highlighting = True
-        
-        if highlighting:
-            color = 'red'
-        
-        message_spans.append(
-            f'<span style="color: {color}; white-space: pre-wrap;">{post.message[i]}</span>'
-        )
-
-        if i in answer_inds and not answer_inds.index(i) % 2 == 0: # if it is an end of an answer
-            highlighting = False
-
-
-    st.write(''.join(message_spans), unsafe_allow_html=True)
+    st.write('<div style="white-space: pre-wrap;">' + ''.join(message_spans) + '</div>', unsafe_allow_html=True)
 
     st.write('\n\n\n')
